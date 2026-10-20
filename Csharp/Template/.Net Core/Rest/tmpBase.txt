@@ -1,0 +1,10 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace nameProjecto.Models
+{
+    public class Base
+    {
+        public string id {get;set;}
+    }
+}

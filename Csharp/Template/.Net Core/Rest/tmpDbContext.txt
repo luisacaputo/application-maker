@@ -1,0 +1,18 @@
+using nameProjecto.Mappings;
+using nameProjecto.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace nameProjecto.DbConfig
+{
+    public class nameProjectoContext:DbContext
+    {
+        public nameProjectoContext(DbContextOptions<nameProjectoContext> option):base(option)
+        {}
+        /*<dbSetT>*/
+      
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            /*<mapping>*/
+        }
+    }
+}

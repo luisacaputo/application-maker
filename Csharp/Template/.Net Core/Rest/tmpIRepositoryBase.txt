@@ -1,0 +1,18 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using nameProjecto.Models;
+
+namespace nameProjecto.Interface
+{
+    public interface IRepositoryBase<T> where T:Base
+    {
+          Task<Response> Add(T model);
+          Task<Response> Update(T model);
+          Task<Response> Delete(string id);
+          Task<T> Get(string search);
+          Task<ResponseView> Search(string search,int page=0,int limit=0);
+          Task<List<T>> Search(string search);
+          Task<ResponseView> Get(int page=0,int limit=0);
+
+    }
+}

@@ -1,0 +1,30 @@
+import #modelRepository from '../repositories/#modelRepository';
+
+class Create#modelService {
+  async add(data: any) {
+    return await #modelRepository.create(data);
+  }
+
+  async list() {
+    return await #modelRepository.getAll();
+  }
+
+  async show(id: any) {
+    const entity = await #modelRepository.getById(id);
+    if (!entity) throw new Error("#model not found");
+    return entity;
+  }
+
+  async update(id: any, data: any) {
+    const entity = await #modelRepository.getById(id);
+    if (!entity) throw new Error("#model not found");
+    return await #modelRepository.update(id, data);
+  }
+
+  async delete(id: any) {
+    await #modelRepository.delete(id);
+    return { message: "#model deleted successfully" };
+  }
+}
+
+export { Create#modelService };

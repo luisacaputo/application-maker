@@ -1,0 +1,6 @@
+import "reflect-metadata";
+import { DataSource } from "typeorm";
+
+export const AppDataSource = new DataSource({
+    // Configuration will be injected or loaded from ormconfig.json
+});

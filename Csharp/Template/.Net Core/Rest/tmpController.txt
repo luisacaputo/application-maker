@@ -1,0 +1,57 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using nameProjecto.Interface;
+using nameProjecto.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+namespace nameProjecto.Controllers
+{
+            [ApiController]
+           
+            public class tableNameController : ControllerBase
+            {
+                        private readonly ItableNameRepository _tableName;
+                        private readonly ILogger<tableNameController> _logger;
+
+                        public tableNameController(ILogger<tableNameController> logger,ItableNameRepository tableName)
+                        {
+                          _tableName=tableName;
+                                    _logger = logger;
+                        }
+                        [HttpGet]
+                        [Route("/tableName/{search}/{page}/{limit}")]
+                        //[Authorize(Roles = "user")]
+                        public async Task<ResponseView> tableName(string search,int page,int limit)
+                        {
+                            return await _tableName.Search(search,page,limit);
+                        }
+                        [HttpPost]
+                        [Route("/addtableName")]
+                        //[Authorize(Roles = "user")]
+                        public async Task<Response> AddtableName([FromBody] tableName obj)
+                        {
+                           return await _tableName.Add(obj);
+                        }
+                        [HttpPut]
+                         [Route("/updatetableName")]
+                        //[Authorize(Roles = "user")]
+                        public async Task<Response> UpdatetableName(string id ,[FromBody] tableName obj)
+                        {
+                            return await _tableName.Update(obj);
+                        }
+                        [HttpDelete]
+                        [Route("/deletetableName/{id}")]
+                        //[Authorize(Roles = "user")]
+                        public async Task<Response> DeletetableName(string id)
+                        {
+                            return await _tableName.Delete(id);
+                        }
+
+            }
+
+}

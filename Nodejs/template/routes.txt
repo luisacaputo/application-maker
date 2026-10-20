@@ -1,0 +1,11 @@
+import {Router } from 'express';
+
+#import
+
+const router = Router();
+
+#new
+
+#methods
+
+export {router}

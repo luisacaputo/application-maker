@@ -1,0 +1,12 @@
+import { Entity,PrimaryColumn,Column,CreateDateColumn,UpdateDateColumn,JoinColumn,ManyToOne,ManyToMany} from "typeorm";
+import {v4 as uuid} from 'uuid'
+
+@Entity("name_model")
+
+export class name_model
+{
+  
+  #propcolun
+
+
+}

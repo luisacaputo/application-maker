@@ -1,0 +1,41 @@
+import { Request, Response } from 'express';
+import { Create#modelService } from '../services/Create#modelService';
+
+class #modelController {
+  async add(request: Request, response: Response) {
+    const data = request.body;
+    const service = new Create#modelService();
+    const result = await service.add(data);
+    return response.json(result);
+  }
+
+  async list(request: Request, response: Response) {
+    const service = new Create#modelService();
+    const result = await service.list();
+    return response.json(result);
+  }
+
+  async show(request: Request, response: Response) {
+    const { id } = request.params;
+    const service = new Create#modelService();
+    const result = await service.show(id);
+    return response.json(result);
+  }
+
+  async update(request: Request, response: Response) {
+    const { id } = request.params;
+    const data = request.body;
+    const service = new Create#modelService();
+    const result = await service.update(id, data);
+    return response.json(result);
+  }
+
+  async delete(request: Request, response: Response) {
+    const { id } = request.params;
+    const service = new Create#modelService();
+    const result = await service.delete(id);
+    return response.json(result);
+  }
+}
+
+export { #modelController };

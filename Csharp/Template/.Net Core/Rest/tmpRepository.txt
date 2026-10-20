@@ -1,0 +1,17 @@
+using System.Threading.Tasks;
+using nameProjecto.DbConfig;
+using nameProjecto.Interface;
+using nameProjecto.Models;
+namespace nameProjecto.Repositories
+{
+    public class tableNameRepository:RepositoryBase<tableName>,ItableNameRepository
+    {
+        private readonly nameProjectoContext _context;
+        public  tableNameRepository( nameProjectoContext context):base(context)
+        {
+            _context=context;
+        }
+       
+        
+    }
+}

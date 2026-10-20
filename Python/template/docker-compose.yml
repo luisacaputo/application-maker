@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  api:
+    stdin_open: true
+    container_name: templateContainerName
+    image: templateImageName
+    restart: unless-stopped
+    volumes:
+      - .:/code
+      - static:/static
+    env_file:
+      - .env
+    build:
+      context: .
+    command: python manage.py runserver 0.0.0.0:8080
+    # command: gunicorn Core.wsgi:application --bind 0.0.0.0:8082
+    ports:
+      - '8080:8080'
+
+volumes:
+  static:

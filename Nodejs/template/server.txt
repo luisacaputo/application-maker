@@ -1,0 +1,31 @@
+import express, { Request, Response, NextFunction } from 'express';
+import "express-async-errors";
+import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import { router } from './routes';
+import swaggerDocument from './swagger.json';
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// Documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use(router);
+
+// Error Handler
+app.use((err: any, request: Request, response: Response, next: NextFunction) => {
+  console.error(err);
+  const status = err.status || 400;
+  return response.status(status).json({ 
+    error: err.message || "Internal Server Error" 
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Documentation available at http://localhost:${PORT}/docs`);
+});

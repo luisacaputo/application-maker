@@ -1,0 +1,37 @@
+import prisma from '../databases/prisma';
+
+class #modelRepository {
+  async getAll() {
+    return await prisma.#modelLower.findMany();
+  }
+
+  async getById(id: any) {
+    const parsedId = isNaN(Number(id)) ? id : Number(id);
+    return await prisma.#modelLower.findUnique({
+      where: { #pkName: parsedId }
+    });
+  }
+
+  async create(data: any) {
+    return await prisma.#modelLower.create({
+      data
+    });
+  }
+
+  async update(id: any, data: any) {
+    const parsedId = isNaN(Number(id)) ? id : Number(id);
+    return await prisma.#modelLower.update({
+      where: { #pkName: parsedId },
+      data
+    });
+  }
+
+  async delete(id: any) {
+    const parsedId = isNaN(Number(id)) ? id : Number(id);
+    return await prisma.#modelLower.delete({
+      where: { #pkName: parsedId }
+    });
+  }
+}
+
+export default new #modelRepository();

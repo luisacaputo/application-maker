@@ -1,0 +1,98 @@
+[
+  {
+    "name": "#sqlite",
+    "type": "sqlite",
+    "database": "src/database/libongo.sqlite",
+    "migrations":["src/database/migrations/*.ts"],
+    "entities":["src/models/*ts"],
+    "extra": {
+      "trustServerCertificate": true
+    },
+
+    "cli":
+    {
+      "migrationsDir":"src/databases/migrations",
+      "entitiesDir":"src/models"
+    }
+  }, 
+  {
+    "name": "#mysql",
+    "type": "mysql",
+    "host": "#host",
+    "port": #port,
+    "username": "#username",
+    "password": "#password",
+    "database": "#database",
+    "entities":["src/models/*ts"],
+    "migrations":["src/database/migrations/*.ts"],
+    "extra": {
+      "trustServerCertificate": true
+    },
+    "cli":
+    {
+      "migrationsDir":"src/databases/migrations",
+      "entitiesDir":"src/models"
+    }
+  },
+  {
+    "name": "#sql",
+    "type": "mssql",
+    "host": "#host",
+    "port": #port,
+    "username": "#username",
+    "password": "#password",
+    "database": "#database",
+    "logging": false,
+    "extra": {
+      "trustServerCertificate": true
+    },
+    "migrations":["src/database/migrations/*.ts"],
+    "entities":["src/models/*ts"],
+    "cli":
+    {
+      "migrationsDir":"src/databases/migrations",
+      "entitiesDir":"src/models"
+    }
+  },
+  {
+    "name": "#postgres",
+    "type": "postgres",
+    "host": "#host",
+    "port": #port,
+    "username": "#username",
+    "password": "#password",
+    "database": "#database",
+    "logging": false,
+    "migrations":["src/database/migrations/*.ts"],
+    "entities":["src/models/*ts"],
+    "extra": {
+      "trustServerCertificate": true
+    },
+    "cli":
+    {
+      "migrationsDir":"src/databases/migrations",
+      "entitiesDir":"src/models"
+    }
+  },
+  {
+    "name": "#oracle",
+    "type": "oracle",
+    "host": "#host",
+    "port": #port,
+    "username": "#username",
+    "password": "#password",
+    "database": "#database",
+    "sid": "xe.oracle.docker",
+    "logging": false,
+    "entities":["src/models/*ts"],
+    "migrations":["src/database/migrations/*.ts"],
+    "extra": {
+      "trustServerCertificate": true
+    },
+    "cli":
+    {
+      "migrationsDir":"src/databases/migrations",
+      "entitiesDir":"src/models"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+using System.Threading.Tasks;
+using nameProjecto.Models;
+
+namespace nameProjecto.Interface
+{
+    public interface ItableNameRepository:IRepositoryBase<tableName>
+    {
+       
+    }
+}

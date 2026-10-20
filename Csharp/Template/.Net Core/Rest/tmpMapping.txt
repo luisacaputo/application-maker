@@ -1,0 +1,16 @@
+using nameProjecto.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace nameProjecto.Mappings
+{
+    public class tableNameMap: IEntityTypeConfiguration<tableName>
+    {
+         public void Configure(EntityTypeBuilder<tableName> builder)
+                        {
+                                    builder.ToTable("tableName");
+                                    /*<mapping>*/
+                        }
+    
+    }
+}
