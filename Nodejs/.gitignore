@@ -1,1 +1,4 @@
 node_modules
+generated-projects/
+
+# postgresql://luiscaputo:G5zUHgS8uqWQ@ep-shiny-fire-65352753-pooler.us-east-2.aws.neon.tech/jls-academy?sslmode=require&channel_binding=require
