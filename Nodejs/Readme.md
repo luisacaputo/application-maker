@@ -24,6 +24,8 @@ starting and ending with a letter or number (`node_modules` is reserved).
 The name is used in `package.json` and Swagger; output folders include a unique
 suffix to avoid overwriting earlier generations. Omitting the name preserves
 automatic naming. The web UI supports the same options.
+The web UI locks configuration while generating, clears previous results when
+configuration changes, and rejects success responses for a different framework.
 
 All three targets provide CRUD at `/api/<model-name>` and Swagger at `/docs`.
 Express/Fastify also expose the OpenAPI document at `/docs-json`. Generated

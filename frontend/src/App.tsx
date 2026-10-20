@@ -1,188 +1,110 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './index.css';
-import LanguageSelector, { Language } from './components/LanguageSelector';
-import DbConfigForm, { FormData } from './components/DbConfigForm';
-import ResultPanel, { GenerateResult } from './components/ResultPanel';
+import './workspace.css';
+import Brand from './components/Brand';
+import Dashboard, { type ProjectActivity } from './components/Dashboard';
+import type { Framework } from './components/DbConfigForm';
+import Icon from './components/Icon';
+import Login, { isCorporateEmail } from './components/Login';
+import ProjectGenerator from './components/ProjectGenerator';
+import type { GenerateResult } from './components/ResultPanel';
 
-const API_BASE = 'http://localhost:5002';
+type View = 'dashboard' | 'generator' | 'projects';
+const SESSION_KEY = 'application-maker.email';
 
-const LANG_ENDPOINTS: Record<Language, string> = {
-  nodejs: '/generateapi/nodejs',
-  csharp: '/generateapi/csharp',
-  python: '/generateapi/python',
-  go: '/generateapi/go',
-};
+function getSession(): { email: string | null; error: string | null } {
+  try {
+    const email = sessionStorage.getItem(SESSION_KEY);
+    return { email: email && isCorporateEmail(email) ? email : null, error: null };
+  } catch {
+    return { email: null, error: 'Não foi possível aceder ao armazenamento da sessão. Permita o armazenamento neste navegador para continuar.' };
+  }
+}
 
-function App() {
-  const [language, setLanguage] = useState<Language>('nodejs');
+export default function App() {
+  const [session, setSession] = useState(getSession);
+  const [view, setView] = useState<View>('dashboard');
+  const [projects, setProjects] = useState<ProjectActivity[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [request, setRequest] = useState<{ framework: Framework; sequence: number }>({ framework: 'nestjs', sequence: 0 });
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const [form, setForm] = useState<FormData>({
-    host: 'localhost',
-    port: '3306',
-    database: '',
-    username: 'root',
-    password: '',
-    databasetype: 'mysql',
-    projectname: '',
-    path: 'C:/Projects',
-  });
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [session.email, view]);
 
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<GenerateResult | null>(null);
-
-  const isValid = () => {
-    if (!form.projectname.trim() || !form.path.trim() || !form.database.trim()) return false;
-    if (form.databasetype !== 'sqlite' && (!form.host.trim() || !form.username.trim())) return false;
-    return true;
-  };
-
-  const handleGenerate = async () => {
-    if (!isValid()) return;
-
-    setLoading(true);
-    setResult(null);
-
+  function login(email: string) {
+    if (!isCorporateEmail(email)) return;
     try {
-      const endpoint = `${API_BASE}${LANG_ENDPOINTS[language]}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          host: form.host,
-          port: Number(form.port),
-          database: form.database,
-          username: form.username,
-          password: form.password,
-          databasetype: form.databasetype,
-          projectname: form.projectname,
-          path: form.path,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        setResult({
-          success: false,
-          message: data.error || 'Erro ao gerar projecto',
-          language,
-          error: data.error || JSON.stringify(data),
-        });
-      } else {
-        setResult({ ...data, language });
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erro de conexão com a API';
-      setResult({
-        success: false,
-        message: msg,
-        language,
-        error: `Não foi possível contactar a API em ${API_BASE}. Certifique-se que o backend está a correr (npm run dev na pasta Nodejs/).`,
-      });
-    } finally {
-      setLoading(false);
+      sessionStorage.setItem(SESSION_KEY, email);
+      setSession({ email, error: null });
+      setView('dashboard');
+      setNotice(null);
+    } catch {
+      setSession({ email: null, error: 'Não foi possível iniciar a sessão. Permita o armazenamento neste navegador e tente novamente.' });
     }
-  };
+  }
+
+  function logout() {
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+      setSession({ email: null, error: null });
+    } catch {
+      setSession({ email: null, error: 'A sessão foi fechada nesta página, mas o navegador não permitiu limpar o armazenamento. Feche este separador para terminar a sessão armazenada.' });
+    }
+    setProjects([]);
+    setBusy(false);
+    setNotice(null);
+    setView('dashboard');
+  }
+
+  function createProject(framework: Framework = 'nestjs') {
+    if (busy) return;
+    setRequest(current => ({ framework, sequence: current.sequence + 1 }));
+    setNotice(null);
+    setView('generator');
+  }
+
+  function recordProject(result: GenerateResult, framework: Framework) {
+    const createdAt = new Date().toISOString();
+    setProjects(current => [{
+      id: result.path || `${createdAt}-${current.length}`,
+      name: result.projectname || 'Projeto sem nome',
+      framework,
+      createdAt,
+      result,
+    }, ...current]);
+    setNotice('Projeto concluído.');
+  }
+
+  if (!session.email) return <Login onLogin={login} error={session.error} />;
+  const email = session.email;
+  const initials = email.split('@')[0].split(/[._-]/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
 
   return (
-    <div className="app">
-      {/* Header */}
-      <header className="header">
-        <div className="header-brand">
-          <div className="header-logo">⚡</div>
-          <div>
-            <div className="header-title">Application Maker</div>
-            <div className="header-subtitle">Code Generator from Database</div>
+    <div className="workspace-app">
+      <a className="skip-link" href="#workspace-content">Saltar para o conteúdo</a>
+      <aside className="workspace-sidebar">
+        <div className="sidebar-brand"><Brand /><span>APPLICATION MAKER</span></div>
+        <nav className="workspace-nav" aria-label="Navegação principal">
+          <button className={view === 'dashboard' ? 'selected' : ''} aria-current={view === 'dashboard' ? 'page' : undefined} disabled={busy} onClick={() => { setView('dashboard'); setNotice(null); }}><Icon name="dashboard" />Dashboard</button>
+          <button className={view === 'generator' ? 'selected' : ''} aria-current={view === 'generator' ? 'page' : undefined} disabled={busy} onClick={() => createProject()}><Icon name="plus" />Novo projeto</button>
+          <button className={view === 'projects' ? 'selected' : ''} aria-current={view === 'projects' ? 'page' : undefined} disabled={busy} onClick={() => { setView('projects'); setNotice(null); }}><Icon name="folder" />Os meus projetos<span className="nav-count">{projects.length}</span></button>
+        </nav>
+      </aside>
+      <div className="workspace-body">
+        <header className="workspace-header">
+          <div className="workspace-location"><strong>{view === 'dashboard' ? 'Dashboard' : view === 'generator' ? 'Novo projeto' : 'Os meus projetos'}</strong></div>
+          <div className="workspace-account"><span className="account-avatar" aria-hidden="true">{initials}</span><div className="account-info"><strong>{email}</strong></div><button className="logout-button" onClick={logout}><Icon name="logout" /><span>Sair</span></button></div>
+        </header>
+        <main id="workspace-content" className="workspace-main" tabIndex={-1}>
+          {notice && <div className="workspace-notice" role="status"><Icon name="check" /><span>{notice}</span><button className="icon-button" onClick={() => setNotice(null)} aria-label="Fechar notificação"><Icon name="close" /></button></div>}
+          {view !== 'generator' && <Dashboard projects={projects} projectsView={view === 'projects'} onCreate={createProject} />}
+          <div hidden={view !== 'generator'}>
+            <ProjectGenerator request={request} onGenerated={recordProject} onBusyChange={setBusy} onBack={() => setView('dashboard')} />
           </div>
-        </div>
-        <div className="header-badge">
-          <span className="header-badge-dot" />
-          API v2.0
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="main">
-        {/* Hero */}
-        <div className="page-hero">
-          <h1>
-            Gere o teu projecto <span>em segundos</span>
-          </h1>
-          <p>
-            Conecta ao teu banco de dados, escolhe a linguagem e o Application Maker gera a estrutura completa do projecto.
-          </p>
-        </div>
-
-        {/* Steps bar */}
-        <div className="steps-bar" aria-label="Passos de configuração">
-          <div className="step active">
-            <div className="step-number">1</div>
-            <span className="step-label">Linguagem</span>
-          </div>
-          <div className="step-divider" />
-          <div className="step active">
-            <div className="step-number">2</div>
-            <span className="step-label">Base de Dados</span>
-          </div>
-          <div className="step-divider" />
-          <div className={`step ${result?.success ? 'done' : ''}`}>
-            <div className="step-number">{result?.success ? '✓' : '3'}</div>
-            <span className="step-label">Gerar</span>
-          </div>
-        </div>
-
-        {/* Language Selector */}
-        <LanguageSelector value={language} onChange={setLanguage} />
-
-        {/* DB Config Form */}
-        <DbConfigForm data={form} language={language} onChange={setForm} />
-
-        {/* Generate Button */}
-        <button
-          id="btn-generate"
-          className="btn-generate"
-          onClick={handleGenerate}
-          disabled={loading || !isValid()}
-          aria-busy={loading}
-        >
-          {loading ? (
-            <>
-              <div className="spinner" />
-              A gerar projecto...
-            </>
-          ) : (
-            <>
-              ⚡ Gerar Projecto
-            </>
-          )}
-        </button>
-
-        {/* Validation hint */}
-        {!isValid() && !loading && (
-          <div style={{
-            textAlign: 'center',
-            fontSize: 13,
-            color: 'var(--text-muted)',
-            marginTop: 8,
-          }}>
-            Preenche todos os campos obrigatórios para continuar
-          </div>
-        )}
-
-        {/* Result Panel */}
-        {(loading || result) && (
-          <div style={{ marginTop: 32 }}>
-            <ResultPanel result={result} loading={loading} />
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="footer">
-        Application Maker &copy; {new Date().getFullYear()} · Node.js · C# .NET 8 · Python Django · Go
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }
-
-export default App;
