@@ -138,3 +138,42 @@ Para atualizar o codigo, execute novamente o comando de arranque.
 Antes de expor o servico na Internet, coloque-o atras de HTTPS e controlo de
 acesso (por exemplo num proxy de entrada). Esta configuracao serve HTTP e nao
 adiciona autenticacao; os projetos e links ZIP podem conter credenciais.
+
+## Deploy no Render (um unico servico)
+
+O `Dockerfile` na raiz compila frontend e API e executa ambos no mesmo contentor.
+O Nginx publica a porta `PORT` fornecida pelo Render e encaminha `/api/` para
+a API interna. Supervisor gere os dois processos; ambos correm sem root.
+O Docker Compose continua disponivel para VPS e nao e usado neste deploy.
+
+Depois de enviar estes ficheiros para o GitHub, configure um **Web Service**:
+
+- Runtime: **Docker**.
+- Root Directory: vazio (raiz do repositorio).
+- Dockerfile Path: `./Dockerfile`.
+- Docker Build Context Directory: `.` (se apresentado).
+- Docker Command: vazio, para usar o comando definido na imagem.
+- Health Check Path: `/healthz` (verifica tambem a API).
+- `PORT`: use o valor fornecido pelo Render; por omissao a imagem usa `10000`.
+
+Faca deploy do commit que inclui o Dockerfile da raiz. Nao aponte apenas para
+`frontend/Dockerfile` ou `Nodejs/Dockerfile`: esses ficheiros sao destinados aos
+servicos separados do Compose.
+
+Para manter projetos e ZIPs entre deploys/reinicios, adicione um **Persistent
+Disk** montado em `/app/generated-projects` num plano que suporte discos.
+Sem esse disco, o armazenamento e efemero e os downloads antigos podem deixar
+de existir. A montagem deve permitir escrita pelo utilizador `node` (UID 1000).
+As bases de dados de origem devem ser acessiveis a partir do Render;
+`host.docker.internal` nao aponta para o seu computador neste ambiente.
+
+O Render termina HTTPS no endereco publico do servico. Configure controlo de
+acesso antes de disponibilizar o gerador publicamente: o login atual e apenas
+uma restricao na interface, nao autenticacao da API.
+
+Para testar a mesma imagem localmente:
+
+```sh
+docker build -t application-maker .
+docker run --rm -p 10000:10000 -v application-maker-data:/app/generated-projects application-maker
+```
