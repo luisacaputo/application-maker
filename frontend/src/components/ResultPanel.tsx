@@ -42,7 +42,7 @@ const ResultPanel: React.FC<Props> = ({ result, loading }) => {
       objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = `${result.projectname || 'projeto-csharp'}.zip`;
+      link.download = `${result.projectname || 'projeto'}.zip`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -160,7 +160,7 @@ const ResultPanel: React.FC<Props> = ({ result, loading }) => {
                 <pre className="project-run-commands"><code>{'dotnet restore\ndotnet run --launch-profile http'}</code></pre>
                 <p className="result-description">Swagger: <a href="http://localhost:5000/swagger" target="_blank" rel="noreferrer">http://localhost:5000/swagger</a>. Para parar, prima Ctrl+C.</p>
               </>
-              : <><div className="result-command-line">cd {result.path}</div><div className="result-command-line">cp .env.example .env</div><div className="result-command-line">Editar DATABASE_URL em .env</div><div className="result-command-line">npm install</div><div className="result-command-line">npm run start:dev</div></>}
+              : <><p className="result-description">Extraia o ZIP e abra um terminal na pasta do projeto.</p><div className="result-command-line">cp .env.example .env</div><div className="result-command-line">Editar DATABASE_URL em .env</div><div className="result-command-line">npm install</div><div className="result-command-line">npm run start:dev</div></>}
           </div>
         )}
       </div>

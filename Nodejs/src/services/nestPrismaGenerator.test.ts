@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import express, { NextFunction, Request, Response } from 'express';
 import { NestPrismaController } from '../controllers/nestPrismaController';
+import { downloadProject } from '../controllers/projectDownloadController';
+import { getProjectArchivePath } from './projectArchive';
 import {
   ensurePostgresSsl, getPrismaProvider, parsePrismaSchema, renderNestProjectFiles, renderPrismaProjectFiles,
   validateProjectName, NestPrismaGeneratorService,
@@ -305,13 +310,22 @@ model Account {
 }
 
 test('Prisma HTTP endpoints forward the selected framework and validated project name', async t => {
-  const execute = t.mock.method(NestPrismaGeneratorService.prototype, 'execute', async () => ({ success: true }));
+  const projectPath = await mkdtemp(path.join(os.tmpdir(), 'node-download-test-'));
+  const archivePaths: string[] = [];
+  await writeFile(path.join(projectPath, 'package.json'), '{"name":"customer-api"}');
+  await writeFile(path.join(projectPath, '.env.example'), 'DATABASE_URL=file:./database.db');
+  await mkdir(path.join(projectPath, 'node_modules'));
+  await writeFile(path.join(projectPath, 'node_modules', 'excluded.txt'), 'excluded');
+  const execute = t.mock.method(NestPrismaGeneratorService.prototype, 'execute', async () => ({
+    success: true, path: projectPath, projectname: 'customer-api',
+  }));
   const app = express();
   app.use(express.json());
   const controller = new NestPrismaController();
   app.post('/generateapi/nodejs/:framework(nestjs|express|fastify)/prisma', (req, res, next) => {
     void controller.handle(req, res).catch(next);
   });
+  app.get('/downloads/:id', downloadProject);
   app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
     res.status(400).json({ error: error.message });
   });
@@ -329,6 +343,17 @@ test('Prisma HTTP endpoints forward the selected framework and validated project
         framework, orm: 'prisma', connectionString: 'file:/tmp/test.db', projectName: ' customer-api ',
       });
       assert.equal(response.status, 201);
+      const result = await response.json();
+      assert.equal(result.path, projectPath);
+      assert.match(result.downloadUrl, /^\/downloads\/[a-f0-9]{32}$/);
+      archivePaths.push(getProjectArchivePath(result.downloadUrl.split('/').pop()));
+      const download = await fetch(`http://127.0.0.1:${address.port}${result.downloadUrl}`);
+      assert.equal(download.status, 200);
+      const bytes = Buffer.from(await download.arrayBuffer());
+      assert.equal(bytes.readUInt32LE(0), 0x04034b50);
+      assert.ok(bytes.includes(Buffer.from('package.json')));
+      assert.ok(bytes.includes(Buffer.from('.env.example')));
+      assert.ok(!bytes.includes(Buffer.from('node_modules/')));
       assert.deepEqual(execute.mock.calls[execute.mock.callCount() - 1]?.arguments, [{
         framework, connectionString: 'file:/tmp/test.db', projectName: 'customer-api',
       }]);
@@ -345,5 +370,7 @@ test('Prisma HTTP endpoints forward the selected framework and validated project
     assert.equal(execute.mock.callCount(), calls);
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    for (const archivePath of archivePaths) await rm(archivePath, { force: true });
+    await rm(projectPath, { recursive: true, force: true });
   }
 });

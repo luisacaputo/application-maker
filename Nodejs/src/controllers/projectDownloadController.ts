@@ -9,7 +9,7 @@ export function downloadProject(request: Request, response: Response, next: Next
   }
 
   response.setHeader('Cache-Control', 'no-store');
-  response.download(archivePath, 'projeto-csharp.zip', error => {
+  response.download(archivePath, 'projeto.zip', error => {
     if (!error) return;
     if (response.headersSent) {
       next(error);

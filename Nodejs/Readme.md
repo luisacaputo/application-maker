@@ -27,6 +27,13 @@ automatic naming. The web UI supports the same options.
 The web UI locks configuration while generating, clears previous results when
 configuration changes, and rejects success responses for a different framework.
 
+All three Node.js generation endpoints also return `downloadUrl`. Download the
+ZIP using `GET /downloads/<id>` (through `/api/downloads/<id>` in the web UI).
+The archive includes source files, Prisma schema, `package.json` and
+`.env.example`, but excludes `node_modules`. Extract it locally, configure
+`DATABASE_URL` in `.env`, then run `npm install` and `npm run start:dev`.
+Downloads use the same private-link storage as C# projects.
+
 All three targets provide CRUD at `/api/<model-name>` and Swagger at `/docs`.
 Express/Fastify also expose the OpenAPI document at `/docs-json`. Generated
 Express/Fastify projects require Node.js 20+ and use the same setup commands:

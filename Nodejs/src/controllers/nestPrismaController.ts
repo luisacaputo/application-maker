@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { NestPrismaGeneratorService, validateProjectName } from '../services/nestPrismaGenerator';
+import { createProjectArchive } from '../services/projectArchive';
 
 const generator = new NestPrismaGeneratorService();
 
@@ -19,7 +20,8 @@ class NestPrismaController {
     const result = await generator.execute({
       connectionString, projectName: name, framework,
     });
-    return response.status(201).json(result);
+    const downloadUrl = await createProjectArchive(result.path);
+    return response.status(201).json({ ...result, downloadUrl });
   }
 }
 

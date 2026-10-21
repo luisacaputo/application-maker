@@ -47,8 +47,12 @@ The project form supports Node.js with NestJS, Express or Fastify and Prisma,
 and C# / .NET with ASP.NET Core and Entity Framework Core. The project name is
 optional; when omitted, the generator chooses a name automatically.
 
-C# generation returns a **Baixar projeto (.zip)** action in the result and project
-details. Extract it on your computer, install the .NET 8 SDK, check the database
+Node.js and C# generation return a **Baixar projeto (.zip)** action in the result
+and project details. For Node.js, extract the ZIP, copy `.env.example` to `.env`,
+configure `DATABASE_URL`, then run `npm install` and `npm run start:dev`.
+Dependencies (`node_modules`) are not included in the ZIP.
+
+For C#, extract it on your computer, install the .NET 8 SDK, check the database
 connection in `appsettings.json`, and run these commands in the project folder:
 
 ```sh
