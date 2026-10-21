@@ -94,7 +94,6 @@ class GoGeneratorService {
       const placeholders = nonPkCols.map((_, i) => databasetype === 'postgres' || databasetype === 'postgresql' ? `$${i + 1}` : '?').join(', ');
       const insertVals = nonPkCols.map(c => `item.${toPascalCase(c.name)}`).join(', ');
       const updateSet = nonPkCols.map((c, i) => `${c.name} = ${databasetype === 'postgres' || databasetype === 'postgresql' ? `$${i + 1}` : '?'}`).join(', ');
-      const updatePkPlaceholder = databasetype === 'postgres' || databasetype === 'postgresql' ? `\$${nonPkCount + 1}` : '?'; // Wait, need nonPkCount
       const nonPkCount = nonPkCols.length;
       const finalUpdatePkPlaceholder = databasetype === 'postgres' || databasetype === 'postgresql' ? `\$${nonPkCount + 1}` : '?';
 

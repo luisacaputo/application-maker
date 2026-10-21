@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import path from 'path';
 
 interface IserverRequest {
   host: string;
@@ -7,13 +8,14 @@ interface IserverRequest {
   password: string;
   databasetype: string;
   port: number;
+  connectionString?: string;
 }
 
 let activeDataSource: DataSource | null = null;
 
 class Conecttype {
 
-  async execute({ host, database, username, password, databasetype, port }: IserverRequest): Promise<DataSource> {
+  async execute({ host, database, username, password, databasetype, port, connectionString }: IserverRequest): Promise<DataSource> {
     const isUrl = host.includes('://');
     console.log(`[DB] Connecting to ${databasetype} ${isUrl ? 'via URL' : 'at ' + host + ':' + port}`);
 
@@ -43,7 +45,9 @@ class Conecttype {
     } else if (databasetype === 'sqlite' || databasetype === 'sqlite3') {
       activeDataSource = new DataSource({
         type: 'sqlite',
-        database: database.endsWith('.sqlite') ? `src/database/${database}` : `src/database/${database}.sqlite`,
+        database: path.isAbsolute(database)
+          ? database
+          : path.join('src', 'database', database.endsWith('.sqlite') ? database : `${database}.sqlite`),
       });
     } else if (databasetype === 'sql' || databasetype === 'mssql') {
       activeDataSource = new DataSource({
@@ -55,7 +59,8 @@ class Conecttype {
       activeDataSource = new DataSource({
         ...baseConfig,
         type: 'postgres',
-        ssl: isUrl ? undefined : false, // Let the URL decide SSL if provided
+        ...(connectionString ? { url: connectionString } : {}),
+        ssl: connectionString || isUrl ? undefined : false,
       });
     } else {
       throw new Error(`Unsupported database type: ${databasetype}`);

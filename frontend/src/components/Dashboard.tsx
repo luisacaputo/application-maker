@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FRAMEWORK_LABELS, type Framework } from './DbConfigForm';
+import { FRAMEWORK_LABELS, type Framework, type Language } from './DbConfigForm';
 import type { GenerateResult } from './ResultPanel';
 import ResultPanel from './ResultPanel';
 import Icon from './Icon';
@@ -7,6 +7,7 @@ import Icon from './Icon';
 export interface ProjectActivity {
   id: string;
   name: string;
+  language: Language;
   framework: Framework;
   createdAt: string;
   result: GenerateResult;
@@ -15,7 +16,7 @@ export interface ProjectActivity {
 interface Props {
   projects: ProjectActivity[];
   projectsView: boolean;
-  onCreate: (framework?: Framework) => void;
+  onCreate: () => void;
 }
 
 export default function Dashboard({ projects, projectsView, onCreate }: Props) {
@@ -33,7 +34,7 @@ export default function Dashboard({ projects, projectsView, onCreate }: Props) {
     <>
       <div className="workspace-title">
         <h1>{projectsView ? 'Os meus projetos' : 'Dashboard'}</h1>
-        <button className="primary-button" onClick={() => onCreate()}><Icon name="plus" />Novo projeto</button>
+        {projectsView && <button className="primary-button" onClick={() => onCreate()}><Icon name="plus" />Novo projeto</button>}
       </div>
 
       {!projectsView &&
@@ -50,8 +51,8 @@ export default function Dashboard({ projects, projectsView, onCreate }: Props) {
           <label className="project-search"><Icon name="search" /><input type="search" placeholder="Pesquisar projeto..." value={search} onChange={event => setSearch(event.target.value)} aria-label="Pesquisar projeto" /></label>
           <select value={frameworkFilter} onChange={event => {
             const value = event.target.value;
-            if (value === '' || value === 'nestjs' || value === 'express' || value === 'fastify') setFrameworkFilter(value);
-          }} aria-label="Filtrar por framework"><option value="">Todos os frameworks</option><option value="nestjs">NestJS</option><option value="express">Express</option><option value="fastify">Fastify</option></select>
+            if (value === '' || value === 'nestjs' || value === 'express' || value === 'fastify' || value === 'aspnetcore') setFrameworkFilter(value);
+          }} aria-label="Filtrar por framework"><option value="">Todos os frameworks</option><option value="nestjs">NestJS</option><option value="express">Express</option><option value="fastify">Fastify</option><option value="aspnetcore">ASP.NET Core</option></select>
         </div>
         {filtered.length > 0 ? <div className="project-table-wrap"><table className="project-table"><thead><tr><th>Projeto</th><th>Framework</th><th>Modelos</th><th>Gerado em</th><th><span className="sr-only">Ações</span></th></tr></thead><tbody>
           {filtered.map(project => <tr key={project.id}><td><span className="project-title"><span className="project-file-icon"><Icon name="folder" /></span><strong>{project.name}</strong></span></td><td><span className="framework-tag">{FRAMEWORK_LABELS[project.framework]}</span></td><td>{project.result.models?.length ?? 0}</td><td>{new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(project.createdAt))}</td><td><button className="detail-button" onClick={() => setSelectedProject(project.id)} aria-label={`Ver detalhes de ${project.name}`}>Detalhes <Icon name="arrow" /></button></td></tr>)}

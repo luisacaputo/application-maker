@@ -4,6 +4,7 @@ import { csharpController } from './controllers/csharpController';
 import { pythonController } from './controllers/pythonController';
 import { goController } from './controllers/goController';
 import { NestPrismaController } from './controllers/nestPrismaController';
+import { downloadProject } from './controllers/projectDownloadController';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.post('/generateapi/nodejs', nodejsCtrl.handle);
 
 // C# .NET generation
 router.post('/generateapi/csharp', csharpCtrl.handle);
+router.get('/downloads/:id', downloadProject);
 
 // Python Django REST generation
 router.post('/generateapi/python', pythonCtrl.handle);

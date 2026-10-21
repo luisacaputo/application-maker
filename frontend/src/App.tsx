@@ -3,7 +3,7 @@ import './index.css';
 import './workspace.css';
 import Brand from './components/Brand';
 import Dashboard, { type ProjectActivity } from './components/Dashboard';
-import type { Framework } from './components/DbConfigForm';
+import type { Framework, Language } from './components/DbConfigForm';
 import Icon from './components/Icon';
 import Login, { isCorporateEmail } from './components/Login';
 import ProjectGenerator from './components/ProjectGenerator';
@@ -26,7 +26,7 @@ export default function App() {
   const [view, setView] = useState<View>('dashboard');
   const [projects, setProjects] = useState<ProjectActivity[]>([]);
   const [busy, setBusy] = useState(false);
-  const [request, setRequest] = useState<{ framework: Framework; sequence: number }>({ framework: 'nestjs', sequence: 0 });
+  const [request, setRequest] = useState({ sequence: 0 });
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,18 +58,19 @@ export default function App() {
     setView('dashboard');
   }
 
-  function createProject(framework: Framework = 'nestjs') {
+  function createProject() {
     if (busy) return;
-    setRequest(current => ({ framework, sequence: current.sequence + 1 }));
+    setRequest(current => ({ sequence: current.sequence + 1 }));
     setNotice(null);
     setView('generator');
   }
 
-  function recordProject(result: GenerateResult, framework: Framework) {
+  function recordProject(result: GenerateResult, language: Language, framework: Framework) {
     const createdAt = new Date().toISOString();
     setProjects(current => [{
       id: result.path || `${createdAt}-${current.length}`,
       name: result.projectname || 'Projeto sem nome',
+      language,
       framework,
       createdAt,
       result,
@@ -88,7 +89,6 @@ export default function App() {
         <div className="sidebar-brand"><Brand /><span>APPLICATION MAKER</span></div>
         <nav className="workspace-nav" aria-label="Navegação principal">
           <button className={view === 'dashboard' ? 'selected' : ''} aria-current={view === 'dashboard' ? 'page' : undefined} disabled={busy} onClick={() => { setView('dashboard'); setNotice(null); }}><Icon name="dashboard" />Dashboard</button>
-          <button className={view === 'generator' ? 'selected' : ''} aria-current={view === 'generator' ? 'page' : undefined} disabled={busy} onClick={() => createProject()}><Icon name="plus" />Novo projeto</button>
           <button className={view === 'projects' ? 'selected' : ''} aria-current={view === 'projects' ? 'page' : undefined} disabled={busy} onClick={() => { setView('projects'); setNotice(null); }}><Icon name="folder" />Os meus projetos<span className="nav-count">{projects.length}</span></button>
         </nav>
       </aside>
@@ -101,7 +101,7 @@ export default function App() {
           {notice && <div className="workspace-notice" role="status"><Icon name="check" /><span>{notice}</span><button className="icon-button" onClick={() => setNotice(null)} aria-label="Fechar notificação"><Icon name="close" /></button></div>}
           {view !== 'generator' && <Dashboard projects={projects} projectsView={view === 'projects'} onCreate={createProject} />}
           <div hidden={view !== 'generator'}>
-            <ProjectGenerator request={request} onGenerated={recordProject} onBusyChange={setBusy} onBack={() => setView('dashboard')} />
+            <ProjectGenerator request={request} onGenerated={recordProject} onBusyChange={setBusy} onBack={() => setView('projects')} />
           </div>
         </main>
       </div>

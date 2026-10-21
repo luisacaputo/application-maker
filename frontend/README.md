@@ -7,7 +7,19 @@ pnpm dev
 pnpm build
 ```
 
-The generator API must be running at `http://localhost:5002`.
+During local development, the generator API must be running at
+`http://localhost:5002`; Vite proxies browser requests from `/api` to that API.
+
+For the complete Docker deployment, run this from the repository root:
+
+```sh
+docker compose up -d --build --wait
+```
+
+Open `http://localhost:8080`. Nginx serves the production frontend and proxies
+`/api` to the internal API, including ZIP downloads. Generated projects persist
+in a Docker volume. See the [deployment instructions](../Nodejs/Readme.md#deploy-com-docker-compose)
+for database connectivity, port configuration, backups and production access.
 
 ## Login and logout
 
@@ -29,21 +41,25 @@ generated project details. Activity is held in memory, never contains connection
 strings, and is cleared on logout or page refresh. No sample projects or
 invented metrics are displayed.
 
-## Technology selection
+## Project generation
 
-The project form cascades language, framework and ORM selections:
+The project form supports Node.js with NestJS, Express or Fastify and Prisma,
+and C# / .NET with ASP.NET Core and Entity Framework Core. The project name is
+optional; when omitted, the generator chooses a name automatically.
 
-| Language | Framework | ORM |
-| --- | --- | --- |
-| Node.js | NestJS, Express, Fastify | Prisma |
-| C# | ASP.NET Core | Entity Framework Core |
-| Go | net/http | None (direct SQL) |
-| Python | Django REST Framework | Django ORM |
+C# generation returns a **Baixar projeto (.zip)** action in the result and project
+details. Extract it on your computer, install the .NET 8 SDK, check the database
+connection in `appsettings.json`, and run these commands in the project folder:
 
-Changing language resets framework and ORM to compatible defaults; changing
-framework resets ORM. C#, Go and Python are UI previews only: generation is
-disabled with an explanatory notice. Node.js generation uses the existing
-framework-specific Prisma routes unchanged. No new backend integration is added.
+```sh
+dotnet restore
+dotnet run --launch-profile http
+```
+
+Swagger opens at `http://localhost:5000/swagger`. Stop the API with Ctrl+C.
+SQLite file paths must refer to a database available on the computer running the
+project. The ZIP contains database configuration, potentially including
+credentials: keep it and its download link private.
 
 The login and workspace reference the blue and white Capgemini logos hosted on
 the official [Capgemini website](https://www.capgemini.com/). These images require

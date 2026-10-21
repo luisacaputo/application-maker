@@ -70,6 +70,13 @@ export function getPrismaProvider(connectionString: string): PrismaProvider {
   return provider;
 }
 
+export function ensurePostgresSsl(connectionString: string): string {
+  if (!/^postgres(?:ql)?:/i.test(connectionString)) return connectionString;
+  const url = new URL(connectionString);
+  if (!url.searchParams.has('sslmode')) url.searchParams.set('sslmode', 'require');
+  return url.toString();
+}
+
 export function parsePrismaSchema(schema: string): ParsedSchema {
   const scalarTypes = new Set([
     'String',
@@ -639,6 +646,7 @@ export class NestPrismaGeneratorService {
     if (!['nestjs', 'express', 'fastify'].includes(framework)) throw new Error('Unsupported framework');
     const trimmedConnectionString = connectionString.trim();
     const provider = getPrismaProvider(trimmedConnectionString);
+    const databaseConnectionString = ensurePostgresSsl(trimmedConnectionString);
     const customName = validateProjectName(requestedName);
     const directoryName = `${customName ?? `${framework}-prisma`}-${Date.now()}-${randomBytes(3).toString('hex')}`;
     const projectName = customName ?? directoryName;
@@ -672,7 +680,7 @@ datasource db {
       try {
         await execFileAsync('npx', ['--yes', `prisma@${PRISMA_VERSION}`, 'db', 'pull'], {
           cwd: temporaryPath,
-          env: { ...process.env, DATABASE_URL: trimmedConnectionString },
+          env: { ...process.env, DATABASE_URL: databaseConnectionString },
           timeout: 120_000,
           maxBuffer: 5 * 1024 * 1024,
         });

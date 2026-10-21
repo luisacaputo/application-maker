@@ -4,7 +4,7 @@ import test from 'node:test';
 import express, { NextFunction, Request, Response } from 'express';
 import { NestPrismaController } from '../controllers/nestPrismaController';
 import {
-  getPrismaProvider, parsePrismaSchema, renderNestProjectFiles, renderPrismaProjectFiles,
+  ensurePostgresSsl, getPrismaProvider, parsePrismaSchema, renderNestProjectFiles, renderPrismaProjectFiles,
   validateProjectName, NestPrismaGeneratorService,
 } from './nestPrismaGenerator';
 
@@ -18,6 +18,22 @@ test('maps supported database URL schemes to Prisma providers', () => {
 
 test('rejects unknown database URL schemes', () => {
   assert.throws(() => getPrismaProvider('mongodb://localhost/app'), /Unsupported connection string/);
+});
+
+test('requires TLS by default for PostgreSQL and preserves explicit SSL settings', () => {
+  assert.equal(
+    ensurePostgresSsl('postgresql://user:pass@db.example.com/app'),
+    'postgresql://user:pass@db.example.com/app?sslmode=require',
+  );
+  assert.equal(
+    ensurePostgresSsl('postgres://user:pass@db.example.com/app?schema=public'),
+    'postgres://user:pass@db.example.com/app?schema=public&sslmode=require',
+  );
+  assert.equal(
+    ensurePostgresSsl('postgresql://user:pass@db.example.com/app?sslmode=verify-full'),
+    'postgresql://user:pass@db.example.com/app?sslmode=verify-full',
+  );
+  assert.equal(ensurePostgresSsl('mysql://user:pass@db.example.com/app'), 'mysql://user:pass@db.example.com/app');
 });
 
 test('extracts single-field keys and ignores composite-key models for CRUD', () => {

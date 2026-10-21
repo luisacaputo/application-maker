@@ -1,0 +1,13 @@
+**
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.docker.json
+!src/
+!src/**
+!template/
+!template/**
+src/**/*.test.ts
+src/**/*.integration.ts
+**/.env
+**/.env.*
